@@ -20,7 +20,8 @@ const (
 	For Create Room type like this : "create room <name>"
 	For Connection Room type like this : "conn room <name>"	
 `
-	ReadBUfferSize
+	ReadBufferSize  = 1024
+	WriteBufferSize = 1024
 )
 
 type Messanger struct {
@@ -35,13 +36,15 @@ func NewMessanger(service service.Messangerer, logger *zap.Logger) *Messanger {
 	}
 }
 
-func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+	ReadBufferSize:  ReadBufferSize,
+	WriteBufferSize: WriteBufferSize,
+}
 
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
+func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 
@@ -62,7 +65,9 @@ func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	m.service.WebSocketService(ctx, conn, name, room_id)
+	//for garbage collector
+	// if Use the r.Context, don't use "go", because r.Context dead, and programm dead btw...
+	go m.service.WebSocketService(ctx, conn, name, room_id)
 }
 
 func (m *Messanger) Cmds(ctx context.Context, conn *websocket.Conn) (string, int, error) {
