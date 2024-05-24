@@ -11,7 +11,9 @@ import (
 	"goTest/internal/storages"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -94,8 +96,28 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 		a.logger.Fatal("error init db", zap.Error(err))
 	}
 
+	// получение хоста и порта redis
+	host := os.Getenv("REDIS_HOST")
+	port := os.Getenv("REDIS_PORT")
+
+	// инициализация клиента redis
+	rclient := redis.NewClient(
+		&redis.Options{
+			Addr: host + ":" + port,
+		})
+
+	// инициализация контекста с таймаутом
+	_, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	// проверка доступности redis
+	_, err = rclient.Ping().Result()
+	if err != nil {
+		a.logger.Fatal("error init redis", zap.Error(err))
+	}
+
 	// инициализация хранилищ
-	newStorages := storages.NewStorages(pool)
+	newStorages := storages.NewStorages(pool, rclient)
 
 	a.Storages = newStorages
 	// инициализация сервисов
