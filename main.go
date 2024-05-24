@@ -9,13 +9,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-//	@title			goTest
-//	@version		1.0
-//	@description	API Server for goTest Application
-//
-//	@host			localhost:8080
-//	@BasePath		/
-
 func main() {
 	// Загружаем переменные окружения из файла .env
 	if err := godotenv.Load(); err != nil {
