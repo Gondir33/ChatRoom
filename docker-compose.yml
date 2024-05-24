@@ -15,13 +15,20 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  redis:
+      image: redis
+      ports:
+          - "6379:6379"
+      healthcheck:
+        test: "exit 0"
+
   app:
     build:
       context: .
       dockerfile: dockerfile
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      - redis
     ports:
       - 8080:8080
     # for debugging

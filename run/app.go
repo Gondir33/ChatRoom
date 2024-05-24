@@ -97,13 +97,12 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 	}
 
 	// получение хоста и порта redis
-	host := os.Getenv("REDIS_HOST")
 	port := os.Getenv("REDIS_PORT")
 
 	// инициализация клиента redis
 	rclient := redis.NewClient(
 		&redis.Options{
-			Addr: host + ":" + port,
+			Addr: "redis:" + port,
 		})
 
 	// инициализация контекста с таймаутом
@@ -117,11 +116,11 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 	}
 
 	// инициализация хранилищ
-	newStorages := storages.NewStorages(pool, rclient)
+	newStorages := storages.NewStorages(pool)
 
 	a.Storages = newStorages
 	// инициализация сервисов
-	services := modules.NewServices(newStorages, components)
+	services := modules.NewServices(newStorages, components, rclient)
 	a.Servises = services
 	controllers := modules.NewControllers(services, components)
 	// инициализация роутера

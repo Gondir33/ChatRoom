@@ -57,7 +57,7 @@ func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	//print rules
 	conn.WriteMessage(websocket.TextMessage, []byte(rules))
 	//for futute timeouts if need will use context
-	ctx := context.TODO()
+	ctx := r.Context()
 
 	name, room_id, err := m.Cmds(ctx, conn)
 	if err != nil {
@@ -67,7 +67,7 @@ func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	//for garbage collector
 	// if Use the r.Context, don't use "go", because r.Context dead, and programm dead btw...
-	go m.service.WebSocketService(ctx, conn, name, room_id)
+	m.service.WebSocketService(ctx, conn, name, room_id)
 }
 
 func (m *Messanger) Cmds(ctx context.Context, conn *websocket.Conn) (string, int, error) {

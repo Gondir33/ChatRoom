@@ -1,11 +1,6 @@
 package service
 
-import (
-	"sync"
-
-	"github.com/gorilla/websocket"
-)
-
+/*
 // Storage of Sockets rooms
 type RoomMap struct {
 	mutex sync.RWMutex
@@ -41,3 +36,4 @@ func (m *RoomMap) findAllConnOfSuchRoom(room int) []*websocket.Conn {
 	m.mutex.RUnlock()
 	return sockets
 }
+*/

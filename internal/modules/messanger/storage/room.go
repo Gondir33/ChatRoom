@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 
-	"github.com/go-redis/redis"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -15,14 +14,12 @@ type Messangerer interface {
 }
 
 type Messanger struct {
-	pool    *pgxpool.Pool
-	rclient *redis.Client
+	pool *pgxpool.Pool
 }
 
-func NewMessanger(pool *pgxpool.Pool, rclient *redis.Client) *Messanger {
+func NewMessanger(pool *pgxpool.Pool) *Messanger {
 	return &Messanger{
-		pool:    pool,
-		rclient: rclient,
+		pool: pool,
 	}
 }
 
