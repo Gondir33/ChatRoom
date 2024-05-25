@@ -12,6 +12,12 @@ const (
 type AppConf struct {
 	Server Server
 	DB     DB
+	Redis  Redis
+}
+
+type Redis struct {
+	Host string
+	Port string
 }
 
 type DB struct {
@@ -39,6 +45,10 @@ func NewAppConf() AppConf {
 			Password: os.Getenv("DB_PASSWORD"),
 			Host:     os.Getenv("DB_HOST"),
 			Port:     os.Getenv("DB_PORT"),
+		},
+		Redis: Redis{
+			Host: os.Getenv("REDIS_HOST"),
+			Port: os.Getenv("REDIS_PORT"),
 		},
 	}
 }

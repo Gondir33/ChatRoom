@@ -11,7 +11,7 @@ import (
 func NewApiRouter(controllers *modules.Controllers, components *component.Components) http.Handler {
 	r := chi.NewRouter()
 
-	r.HandleFunc("/ws", controllers.Messangerer.WebSocketHandler)
+	r.HandleFunc("/ws", controllers.Messangerer.MessangerHandler)
 
 	return r
 }

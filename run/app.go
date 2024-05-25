@@ -96,13 +96,10 @@ func (a *App) Bootstrap(options ...interface{}) Runner {
 		a.logger.Fatal("error init db", zap.Error(err))
 	}
 
-	// получение хоста и порта redis
-	port := os.Getenv("REDIS_PORT")
-
 	// инициализация клиента redis
 	rclient := redis.NewClient(
 		&redis.Options{
-			Addr: "redis:" + port,
+			Addr: a.conf.Redis.Host + ":" + a.conf.Redis.Port,
 		})
 
 	// инициализация контекста с таймаутом

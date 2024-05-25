@@ -8,7 +8,7 @@ import (
 
 type Messangerer interface {
 	WriteMessage(ctx context.Context, message string, room int) error
-	GetLastMessages(ctx context.Context, room_id int, limit int) ([]byte, error)
+	GetLastMessages(ctx context.Context, room_id int, limit int) ([]string, error)
 	CreateRoom(ctx context.Context, name string) error
 	GetRoomId(ctx context.Context, name string) (int, error)
 }
@@ -37,7 +37,7 @@ func (m *Messanger) WriteMessage(ctx context.Context, message string, room int) 
 	return nil
 }
 
-func (m *Messanger) GetLastMessages(ctx context.Context, room_id int, limit int) ([]byte, error) {
+func (m *Messanger) GetLastMessages(ctx context.Context, room_id int, limit int) ([]string, error) {
 	sql := `
 	  SELECT (mess)
 	  FROM message
@@ -52,14 +52,14 @@ func (m *Messanger) GetLastMessages(ctx context.Context, room_id int, limit int)
 	}
 	defer rows.Close()
 
-	var messages []byte
+	messages := make([]string, 0, limit)
 	var msg string
 	for rows.Next() {
 		err = rows.Scan(&msg)
 		if err != nil {
 			return nil, err
 		}
-		messages = append(messages, []byte(msg+"\n")...)
+		messages = append(messages, msg)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -68,6 +68,7 @@ func (m *Messanger) GetLastMessages(ctx context.Context, room_id int, limit int)
 
 	return messages, nil
 }
+
 func (m *Messanger) CreateRoom(ctx context.Context, name string) error {
 	sql := `
 	  INSERT INTO room (name)

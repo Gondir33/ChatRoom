@@ -12,7 +12,7 @@ import (
 )
 
 type Messangerer interface {
-	WebSocketHandler(w http.ResponseWriter, r *http.Request)
+	MessangerHandler(w http.ResponseWriter, r *http.Request)
 }
 
 const (
@@ -44,7 +44,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: WriteBufferSize,
 }
 
-func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
+func (m *Messanger) MessangerHandler(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 
@@ -54,9 +54,9 @@ func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	//print rules
+	// print rules
 	conn.WriteMessage(websocket.TextMessage, []byte(rules))
-	//for futute timeouts if need will use context
+	// for futute timeouts if need will use context
 	ctx := r.Context()
 
 	name, room_id, err := m.Cmds(ctx, conn)
@@ -65,9 +65,10 @@ func (m *Messanger) WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//for garbage collector
 	// if Use the r.Context, don't use "go", because r.Context dead, and programm dead btw...
-	m.service.WebSocketService(ctx, conn, name, room_id)
+	// need to upgrade context like in avito to give work for garbage collector
+	// go m.service.WebSocketService(ctx, conn, name, room_id)
+	m.service.MessagerService(ctx, conn, name, room_id)
 }
 
 func (m *Messanger) Cmds(ctx context.Context, conn *websocket.Conn) (string, int, error) {
@@ -80,7 +81,7 @@ func (m *Messanger) Cmds(ctx context.Context, conn *websocket.Conn) (string, int
 			return "", 0, err
 		}
 		cmd := string(msg)
-		room_id, err = m.RulesRoom(ctx, cmd)
+		room_id, err = m.RulesRoom(ctx, cmd, conn)
 		if err != nil {
 			return "", 0, err
 		}
@@ -101,13 +102,14 @@ func (m *Messanger) Cmds(ctx context.Context, conn *websocket.Conn) (string, int
 	return string(msg), room_id, err
 }
 
-func (m *Messanger) RulesRoom(ctx context.Context, text string) (int, error) {
+func (m *Messanger) RulesRoom(ctx context.Context, text string, conn *websocket.Conn) (int, error) {
 	parts := strings.Split(text, " ")
 
 	for i := 0; i+2 < len(parts); i += 2 {
 
 		if parts[i] == "create" && parts[i+1] == "room" {
 
+			conn.WriteMessage(websocket.TextMessage, []byte("Create Room "+parts[i+2]))
 			err := m.service.CreateRoom(ctx, parts[i+2])
 			if err != nil {
 				return 0, err
@@ -115,6 +117,7 @@ func (m *Messanger) RulesRoom(ctx context.Context, text string) (int, error) {
 
 		} else if parts[i] == "conn" && parts[i+1] == "room" {
 
+			conn.WriteMessage(websocket.TextMessage, []byte("Connect to Room "+parts[i+2]))
 			id, err := m.service.GetRoomId(ctx, parts[i+2])
 			if err != nil {
 				return 0, err
