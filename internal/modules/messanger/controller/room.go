@@ -44,6 +44,23 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: WriteBufferSize,
 }
 
+/*
+
+Can not to make the mock test for redis
+
+https://github.com/go-redis/redismock.git
+
+Unsupported Command
+	RedisClient:
+		Subscribe / PSubscribe
+
+	RedisCluster:
+		Subscribe / PSubscribe
+		Pipeline / TxPipeline
+		Watch
+
+*/
+
 func (m *Messanger) MessangerHandler(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
